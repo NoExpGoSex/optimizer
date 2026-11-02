@@ -1,113 +1,294 @@
-# Automating a Range of Operations Based on a Template
+# Automating Optimizer with a JSON Template
 
-To automate a range of operations using a provided template, follow these steps:
+Optimizer can be configured in a repeatable way by passing a JSON template file to the app.
 
-1. **Download the Template**: Obtain the template file for your Windows version:
+## 1. Download a starter template
+
+Use one of the template files that matches your Windows version:
+
 - [Windows 7](https://github.com/hellzerg/optimizer/blob/master/templates/template-windows7.json)
 - [Windows 8.1](https://github.com/hellzerg/optimizer/blob/master/templates/template-windows8.json)
 - [Windows 10](https://github.com/hellzerg/optimizer/blob/master/templates/template-windows10.json)
 - [Windows 11](https://github.com/hellzerg/optimizer/blob/master/templates/template-windows11.json)
 
-2. **Edit the Template**: Customize the template configuration according to your needs.
+## 2. Edit the template
 
-3. **Execute the Optimizer**: Run the optimizer executable with the edited template configuration using the command: `optimizer.exe /config=template.json`
+Customize the JSON values to match your desired configuration.
 
-## Template Configuration Options
+## 3. Run Optimizer with the template
 
-### WindowsVersion (required)
-- Should match your actual Windows version. Available values: `7 | 8 | 10 | 11`
+```bat
+optimizer.exe /config=template.json
+```
+
+## Example template
+
+```json
+{
+  "WindowsVersion": 11,
+  "PostAction": {
+    "Restart": false,
+    "RestartType": "Normal"
+  },
+  "Cleaner": {
+    "TempFiles": true,
+    "BsodDumps": true,
+    "ErrorReports": true,
+    "RecycleBin": null,
+    "InternetExplorer": null,
+    "GoogleChrome": {
+      "Cache": true,
+      "Cookies": true,
+      "History": true,
+      "Session": true,
+      "Passwords": null
+    }
+  },
+  "Pinger": {
+    "SetDNS": "Cloudflare",
+    "CustomDNSv4": [],
+    "CustomDNSv6": [],
+    "FlushDNSCache": true
+  },
+  "ProcessControl": {
+    "Prevent": ["chrome.exe", "firefox.exe"],
+    "Allow": ["opera.exe"]
+  },
+  "HostsEditor": {
+    "IncludeWwwCname": true,
+    "Block": ["youtube.com", "google.com"],
+    "Remove": ["facebook.com"],
+    "Add": [
+      {
+        "Domain": "test.com",
+        "IPAddress": "192.168.1.5"
+      },
+      {
+        "Domain": "test2.com",
+        "IPAddress": "192.168.1.9"
+      }
+    ]
+  },
+  "RegistryFix": {
+    "TaskManager": null,
+    "CommandPrompt": null,
+    "ControlPanel": null,
+    "FolderOptions": null,
+    "RunDialog": null,
+    "RightClickMenu": null,
+    "WindowsFirewall": null,
+    "RegistryEditor": null
+  },
+  "Integrator": {
+    "TakeOwnership": false,
+    "OpenWithCMD": false
+  },
+  "AdvancedTweaks": {
+    "UnlockAllCores": null,
+    "DisableHPET": null,
+    "EnableRegistryBackups": null,
+    "EnableLoginVerbose": null,
+    "SvchostProcessSplitting": {
+      "Disable": null,
+      "RAM": null
+    }
+  },
+  "Tweaks": {
+    "DisableWindowsDefender": false,
+    "DisableAutomaticUpdates": false,
+    "EnableUtcTime": true,
+    "DisableCoPilotAI": true
+  }
+}
+```
+
+## Template configuration reference
+
+### WindowsVersion
+- Required.
+- Integer value matching the installed OS:
+  - `7`
+  - `8`
+  - `10`
+  - `11`
 
 ### Cleaner
-- Choose target folders for cleaning by marking them as `true`.
+- All options are nullable booleans.
+- Use `true` to clean or remove the item.
+- Use `false` to explicitly keep it.
+- Use `null` to leave the option unchanged.
+
+Example:
+
+```json
+"Cleaner": {
+  "TempFiles": true,
+  "BsodDumps": true,
+  "RecycleBin": false,
+  "GoogleChrome": {
+    "Cache": true,
+    "Cookies": true,
+    "History": true
+  }
+}
+```
 
 ### Pinger
-- Choose DNS provider:
-- Available values: `Automatic | Custom | Cloudflare | OpenDNS | Quad9 | Google | AlternateDNS | Adguard | CleanBrowsing | CleanBrowsing (adult filter)`
-- If you choose `Custom`, you should define at least one primary IPv4 and IPv6 DNS servers. Alternative DNS serves are optional.
-- Set FlushDNSCache to `true` to perform DNS cache flushing. Example:
+- `SetDNS` chooses a predefined DNS provider.
+- Supported values:
+  - `Automatic`
+  - `Custom`
+  - `Cloudflare`
+  - `OpenDNS`
+  - `Quad9`
+  - `Google`
+  - `AlternateDNS`
+  - `Adguard`
+  - `CleanBrowsing`
+  - `CleanBrowsing (adult filter)`
+- `CustomDNSv4` and `CustomDNSv6` are arrays of custom DNS server IPs.
+- `FlushDNSCache` is a boolean and should be set to `true` when you want the system DNS cache cleared.
 
-#### Using pre-defined options:
- ```
- "Pinger": {
-     "SetDNS": "Cloudflare",
-     "CustomDNSv4": [],
-     "CustomDNSv6": [],
-     "FlushDNSCache": true
- }
- ```
+Examples:
 
-#### Using `Custom`:
- ```
- "Pinger": {
-     "SetDNS": "Custom",
-     "CustomDNSv4": ["3.3.3.3"],
-     "CustomDNSv6": ["::1"],
-     "FlushDNSCache": true
- }
- ```
+```json
+"Pinger": {
+  "SetDNS": "Cloudflare",
+  "CustomDNSv4": [],
+  "CustomDNSv6": [],
+  "FlushDNSCache": true
+}
+```
+
+```json
+"Pinger": {
+  "SetDNS": "Custom",
+  "CustomDNSv4": ["3.3.3.3"],
+  "CustomDNSv6": ["::1"],
+  "FlushDNSCache": true
+}
+```
 
 ### ProcessControl
-- Prevent processes from running by providing filenames.
-- Allow previously prevented processes to run again. Example:
+- Prevents or allows processes by filename.
 
- ```
- "ProcessControl": {
-     "Prevent": ["chrome.exe", "firefox.exe"],
-     "Allow": ["opera.exe"]
- }
- ```
+```json
+"ProcessControl": {
+  "Prevent": ["chrome.exe", "firefox.exe"],
+  "Allow": ["opera.exe"]
+}
+```
 
-### Hosts
-- Mark `IncludeWwwCname` to `true` in order to automatically adding an extra `www.` record for each entry.
-- Entries in the `Remove` list should be the domain names you want remove from the hosts file.
-- Entries in the `Block` list route to `0.0.0.0`, effectively blocking access.
-- Entries in the `Add` list are added. Example:
+### HostsEditor
+- `IncludeWwwCname`: when `true`, adds a `www.` entry for each domain you add or block.
+- `Block`: list of domains to redirect to `0.0.0.0`.
+- `Remove`: list of domains to remove from the HOSTS file.
+- `Add`: list of custom records with `Domain` and `IPAddress`.
 
- ```
- "HostsEditor": {
-     "IncludeWwwCname": true,
-     "Block": ["youtube.com", "google.com"],
-     "Remove": ["facebook.com"]
-     "Add": [
-         {
-             "Domain": "test.com",
-             "IPAddress": "192.168.1.5"
-         },
-         {
-             "Domain": "test2.com",
-             "IPAddress": "192.168.1.9"
-         }
-     ]
- }
- ```
+```json
+"HostsEditor": {
+  "IncludeWwwCname": true,
+  "Block": ["youtube.com", "google.com"],
+  "Remove": ["facebook.com"],
+  "Add": [
+    {
+      "Domain": "test.com",
+      "IPAddress": "192.168.1.5"
+    },
+    {
+      "Domain": "test2.com",
+      "IPAddress": "192.168.1.9"
+    }
+  ]
+}
+```
 
 ### RegistryFix
-- Enable core Windows components by marking them as `true`. Use for repairing computers from malicious actions.
+- Use boolean values to enable or reset specific registry-based fixes.
+
+Example:
+
+```json
+"RegistryFix": {
+  "TaskManager": true,
+  "CommandPrompt": false,
+  "WindowsFirewall": true
+}
+```
 
 ### Integrator
-- `TakeOwnership`: Add or remove "Take Ownership" option in right-click menu. (`false`)
-- `OpenWithCMD`: Add or remove "Open CMD here" option in right-click menu. (`false`)
+- `TakeOwnership`: adds or removes the "Take Ownership" item from the right-click menu.
+- `OpenWithCMD`: adds or removes the "Open CMD here" item from the right-click menu.
+
+```json
+"Integrator": {
+  "TakeOwnership": false,
+  "OpenWithCMD": false
+}
+```
 
 ### AdvancedTweaks
-- Caution: These tweaks are technical, avoid unless you understand them.
-- `UnlockAllCores`: Leave `null` or `false`.
-- `DisableHPET`: Enable or disable High Precision Event Timer.
-- `EnableLoginVerbose`: Enable or disable Detailed Login Screen.
-- `EnableRegistryBackups`: Enable periodic backups of Registry.
+- These are advanced and should only be used when you understand the impact.
+- Common keys:
+  - `DisableHPET`
+  - `EnableLoginVerbose`
+  - `UnlockAllCores`
+  - `EnableRegistryBackups`
 
-#### SvchostProcessSplitting
-- Mark `true` to reduce svchost.exe processes for optimal memory.
-- Mark `false` to enable process splitting for optimal performance.
+Example:
+
+```json
+"AdvancedTweaks": {
+  "DisableHPET": false,
+  "EnableLoginVerbose": true,
+  "UnlockAllCores": null,
+  "EnableRegistryBackups": true,
+  "SvchostProcessSplitting": {
+    "Disable": true,
+    "RAM": 8
+  }
+}
+```
 
 ### Tweaks
-- Mark options to apply as `true`.
-- Mark options to reset as `false`.
-- Mark options to ignore as `null`.
+- This object contains many individual toggles.
+- Use `true` to apply a tweak, `false` to reset it, and `null` to leave it unchanged.
+
+Example:
+
+```json
+"Tweaks": {
+  "DisableWindowsDefender": false,
+  "DisableAutomaticUpdates": true,
+  "EnableUtcTime": true,
+  "DisableCoPilotAI": true
+}
+```
 
 ### PostAction
-- Final action after template execution:
-- Mark `Restart` as `true` to restart and apply changes.
-- Configure `RestartType` for different restart types (`Normal` or `SafeMode`).
-- Use `DisableDefender` and `EnableDefender` for automated Windows Defender control.
+- Final action after the template is applied.
 
-**Note**: Review and customize the template configuration carefully before executing.
+Available fields:
+
+- `Restart`: boolean
+- `RestartType`: one of:
+  - `Normal`
+  - `SafeMode`
+  - `DisableDefender`
+  - `EnableDefender`
+
+Example:
+
+```json
+"PostAction": {
+  "Restart": true,
+  "RestartType": "Normal"
+}
+```
+
+## Notes
+- `null` and omitted values are treated as "do nothing" for most settings.
+- `false` explicitly resets or disables a feature.
+- Always review the template before running it, especially in `Tweaks` and `AdvancedTweaks`.
+
+Important: this project is deprecated in favor of OptimizerNXT, but the config format above reflects the JSON schema used by the legacy Optimizer build.

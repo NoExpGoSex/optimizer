@@ -3,7 +3,8 @@
 - ```optimizer.exe /unsafe```
 
 ## How to disable Windows Defender in Windows 10 1903 and later ##
-#### https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/security-malware-windows-defender-disableantispyware "DisableAntiSpyware" is discontinued and will be ignored on client devices, as of version 1903. ####
+
+### [Microsoft documentation][def]: "DisableAntiSpyware" is discontinued and will be ignored on client devices, as of version 1903
 
 - Restart in SAFE MODE
 - Execute: ```optimizer.exe /disabledefender```
@@ -63,3 +64,6 @@
 
 - ```optimizer.exe /disablehpet```
 - ```optimizer.exe /enablehpet```
+
+
+[def]: https://docs.microsoft.com/en-us/windows-hardware/customize/desktop/unattend/security-malware-windows-defender-disableantispyware
